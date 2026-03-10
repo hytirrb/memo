@@ -29,13 +29,35 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label"><span class="label-icon">💬</span> 备注说明（选填）</label>
+            <div class="desc-label-row">
+              <label class="form-label"><span class="label-icon">💬</span> 备注说明（支持 Markdown）</label>
+              <div class="preview-toggle">
+                <button :class="{ active: descTab === 'edit' }" @click="descTab = 'edit'">编辑</button>
+                <button :class="{ active: descTab === 'preview' }" @click="descTab = 'preview'">预览</button>
+              </div>
+            </div>
             <textarea
+              v-if="descTab === 'edit'"
               v-model="form.description"
               class="form-input form-textarea"
-              placeholder="添加更多描述…"
-              rows="3"
+              placeholder="支持 Markdown：**加粗** _斜体_ `代码` - 列表 ..."
+              rows="4"
             ></textarea>
+            <div
+              v-else
+              class="md-preview"
+              v-html="previewHtml"
+            ></div>
+          </div>
+
+          <!-- 完成状态勾选 -->
+          <div class="form-group">
+            <label class="completed-toggle" :class="{ checked: form.completed }" @click="form.completed = !form.completed">
+              <span class="toggle-box">
+                <span v-if="form.completed" class="toggle-check">✓</span>
+              </span>
+              <span class="toggle-label">标记为已完成</span>
+            </label>
           </div>
 
           <div class="form-group">
@@ -64,7 +86,12 @@
 </template>
 
 <script setup>
-defineProps({
+import { ref, computed } from 'vue'
+import { marked } from 'marked'
+
+marked.setOptions({ breaks: true })
+
+const props = defineProps({
   show: Boolean,
   isEditing: Boolean,
   form: Object,
@@ -72,6 +99,12 @@ defineProps({
   formatFullDate: Function
 })
 defineEmits(['close', 'submit'])
+
+const descTab = ref('edit')
+
+const previewHtml = computed(() =>
+  props.form?.description ? marked.parse(props.form.description) : '<p style="color:#94a3b8">暂无内容</p>'
+)
 </script>
 
 <style scoped>
@@ -120,7 +153,53 @@ defineEmits(['close', 'submit'])
   outline: none; width: 100%; background: white; font-family: inherit;
 }
 .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-.form-textarea { resize: vertical; min-height: 80px; }
+.form-textarea { resize: vertical; min-height: 100px; font-family: 'Courier New', monospace; font-size: 13px; }
+
+.desc-label-row { display: flex; align-items: center; justify-content: space-between; }
+.preview-toggle {
+  display: flex; gap: 2px;
+  background: var(--secondary); padding: 3px; border-radius: 7px;
+}
+.preview-toggle button {
+  padding: 3px 10px; border: none; border-radius: 5px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  background: transparent; color: var(--text-muted); transition: all 0.2s;
+}
+.preview-toggle button.active {
+  background: white; color: var(--primary);
+  box-shadow: var(--shadow-sm); font-weight: 600;
+}
+
+.md-preview {
+  min-height: 100px; padding: 10px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 14px; line-height: 1.7; color: var(--text-primary);
+  background: #fafafa;
+}
+.md-preview :deep(p) { margin: 0 0 6px; }
+.md-preview :deep(p:last-child) { margin-bottom: 0; }
+.md-preview :deep(strong) { font-weight: 700; }
+.md-preview :deep(em) { font-style: italic; }
+.md-preview :deep(code) {
+  background: #f1f5f9; padding: 1px 6px;
+  border-radius: 4px; font-size: 13px; font-family: monospace; color: #6366f1;
+}
+.md-preview :deep(pre) {
+  background: #1e293b; color: #e2e8f0;
+  padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0;
+}
+.md-preview :deep(pre code) { background: none; color: inherit; padding: 0; }
+.md-preview :deep(ul), .md-preview :deep(ol) { padding-left: 20px; margin: 4px 0; }
+.md-preview :deep(li) { margin: 3px 0; }
+.md-preview :deep(blockquote) {
+  border-left: 3px solid var(--primary-light); padding-left: 12px;
+  margin: 6px 0; color: var(--text-secondary); font-style: italic;
+}
+.md-preview :deep(h1) { font-size: 18px; font-weight: 800; margin: 6px 0; }
+.md-preview :deep(h2) { font-size: 16px; font-weight: 700; margin: 5px 0; }
+.md-preview :deep(h3) { font-size: 14px; font-weight: 700; margin: 4px 0; }
+.md-preview :deep(a) { color: var(--primary); text-decoration: underline; }
+.md-preview :deep(hr) { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 .date-readonly {
   padding: 10px 14px;
   background: var(--secondary);
@@ -141,6 +220,32 @@ defineEmits(['close', 'submit'])
 .priority-btn.pb-medium.active { border-color: var(--warning); background: #fef9c3; color: #b45309; }
 .priority-btn.pb-low.active { border-color: var(--success); background: #dcfce7; color: #16a34a; }
 .priority-btn:hover { border-color: var(--primary); }
+
+.completed-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.completed-toggle:hover { border-color: var(--success); background: #f0fdf4; }
+.completed-toggle.checked { border-color: var(--success); background: #f0fdf4; }
+.toggle-box {
+  width: 20px; height: 20px; flex-shrink: 0;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  font-size: 12px; font-weight: 700; color: white;
+}
+.completed-toggle.checked .toggle-box { background: var(--success); border-color: var(--success); }
+.toggle-label { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+.completed-toggle.checked .toggle-label { color: var(--success); font-weight: 600; }
 
 .btn-cancel {
   padding: 9px 20px;

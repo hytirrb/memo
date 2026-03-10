@@ -33,6 +33,7 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
+  font-size: 17px;
 }
 
 #app { min-height: 100vh; }

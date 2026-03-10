@@ -4,46 +4,86 @@
       :totalCount="totalCount"
       :completedCount="completedCount"
       :pendingCount="pendingCount"
+      :currentPage="currentPage"
       @add="openAddModal(selectedDate)"
+      @switchPage="currentPage = $event"
+      @toggleCalendar="showCalendar = !showCalendar"
     />
 
     <main class="main-content">
-      <DateNav
-        :weekDates="weekDates"
-        :selectedDate="selectedDate"
-        :todayIso="todayIso"
-        :hasTodos="hasTodos"
-        @shift="shiftWeek"
-        @select="selectedDate = $event"
+      <!-- 设置页面：全宽，不显示月历 -->
+      <SettingsPage
+        v-if="currentPage === 'settings'"
+        @imported="fetchTodos"
       />
 
-      <!-- 日期标题 + 过滤 -->
-      <div class="date-section-header">
-        <div class="date-title-wrap">
-          <h2 class="date-title">{{ formatFullDate(selectedDate) }}</h2>
-          <span v-if="selectedDate === todayIso" class="today-badge">今天</span>
-        </div>
-        <div class="filter-tabs">
-          <button
-            v-for="f in filters"
-            :key="f.key"
-            class="filter-tab"
-            :class="{ active: currentFilter === f.key }"
-            @click="currentFilter = f.key"
-          >{{ f.label }}</button>
+      <!-- 今日 / 总览：左侧月历 + 右侧内容 -->
+      <div v-else class="page-layout">
+
+        <!-- 左侧月历 -->
+        <MonthCalendar
+          v-if="showCalendar"
+          :selectedDate="selectedDate"
+          :todayIso="todayIso"
+          :hasTodos="hasTodos"
+          @select="selectedDate = $event"
+        />
+
+        <!-- 右侧内容区 -->
+        <div class="page-right">
+
+          <!-- 今日视图 -->
+          <template v-if="currentPage === 'daily'">
+            <DateNav
+              :weekDates="weekDates"
+              :selectedDate="selectedDate"
+              :todayIso="todayIso"
+              :hasTodos="hasTodos"
+              @shift="shiftWeek"
+              @select="selectedDate = $event"
+            />
+
+            <div class="date-section-header">
+              <div class="date-title-wrap">
+                <h2 class="date-title">{{ formatFullDate(selectedDate) }}</h2>
+                <span v-if="selectedDate === todayIso" class="today-badge">今天</span>
+              </div>
+              <div class="filter-tabs">
+                <button
+                  v-for="f in filters"
+                  :key="f.key"
+                  class="filter-tab"
+                  :class="{ active: currentFilter === f.key }"
+                  @click="currentFilter = f.key"
+                >{{ f.label }}</button>
+              </div>
+            </div>
+
+            <TodoList
+              :filteredTodos="filteredTodos"
+              :currentFilter="currentFilter"
+              :emptyText="emptyText"
+              :priorityMap="priorityMap"
+              @toggle="handleToggle"
+              @edit="openEditModal"
+              @delete="confirmDelete"
+              @add="openAddModal(selectedDate)"
+            />
+          </template>
+
+          <!-- 总览视图 -->
+          <OverviewPage
+            v-else-if="currentPage === 'overview'"
+            :todos="todos"
+            :priorityMap="priorityMap"
+            :formatFullDate="formatFullDate"
+            :todayIso="todayIso"
+            @toggle="handleToggle"
+            @edit="openEditModal"
+            @delete="confirmDelete"
+          />
         </div>
       </div>
-
-      <TodoList
-        :filteredTodos="filteredTodos"
-        :currentFilter="currentFilter"
-        :emptyText="emptyText"
-        :priorityMap="priorityMap"
-        @toggle="handleToggle"
-        @edit="openEditModal"
-        @delete="confirmDelete"
-        @add="openAddModal(selectedDate)"
-      />
     </main>
 
     <TodoModal
@@ -67,17 +107,23 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useTodos } from './composables/useTodos'
 import AppHeader from './components/AppHeader.vue'
 import DateNav from './components/DateNav.vue'
+import MonthCalendar from './components/MonthCalendar.vue'
 import TodoList from './components/TodoList.vue'
+import OverviewPage from './components/OverviewPage.vue'
+import SettingsPage from './components/SettingsPage.vue'
 import TodoModal from './components/TodoModal.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
 import ToastNotify from './components/ToastNotify.vue'
 
+const currentPage = ref('daily')
+const showCalendar = ref(true)
+
 const {
-  selectedDate, currentFilter, showModal, isEditing, deleteTarget, toast, form,
+  todos, selectedDate, currentFilter, showModal, isEditing, deleteTarget, toast, form,
   filters, priorities, priorityMap,
   todayIso, weekDates, filteredTodos,
   totalCount, completedCount, pendingCount, emptyText,
@@ -100,12 +146,24 @@ onMounted(async () => {
   background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%);
 }
 .main-content {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
   width: 100%;
   padding: 24px 24px 48px;
   flex: 1;
 }
+
+/* 双栏布局 */
+.page-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.page-right {
+  flex: 1;
+  min-width: 0;
+}
+
 .date-section-header {
   display: flex;
   align-items: center;
@@ -137,7 +195,8 @@ onMounted(async () => {
   box-shadow: var(--shadow-sm); font-weight: 600;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+  .page-layout { flex-direction: column; }
   .main-content { padding: 16px 16px 48px; }
   .date-title { font-size: 15px; }
 }

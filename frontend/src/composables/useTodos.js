@@ -11,7 +11,7 @@ export function useTodos() {
   const isEditing = ref(false)
   const deleteTarget = ref(null)
   const toast = ref({ show: false, msg: '', type: 'success' })
-  const form = ref({ title: '', description: '', date: '', priority: 'medium' })
+  const form = ref({ title: '', description: '', date: '', priority: 'medium', completed: false })
   let editingId = null
 
   // ───── 常量 ─────
@@ -104,7 +104,8 @@ export function useTodos() {
       await api.updateTodo(editingId, {
         title: form.value.title,
         description: form.value.description,
-        priority: form.value.priority
+        priority: form.value.priority,
+        completed: form.value.completed
       })
       showToast('任务已更新', 'success')
     } else {
@@ -126,14 +127,14 @@ export function useTodos() {
   function openAddModal(date) {
     isEditing.value = false
     editingId = null
-    form.value = { title: '', description: '', date: date || selectedDate.value, priority: 'medium' }
+    form.value = { title: '', description: '', date: date || selectedDate.value, priority: 'medium', completed: false }
     showModal.value = true
   }
 
   function openEditModal(todo) {
     isEditing.value = true
     editingId = todo.id
-    form.value = { title: todo.title, description: todo.description || '', date: todo.date, priority: todo.priority }
+    form.value = { title: todo.title, description: todo.description || '', date: todo.date, priority: todo.priority, completed: todo.completed }
     showModal.value = true
   }
 
