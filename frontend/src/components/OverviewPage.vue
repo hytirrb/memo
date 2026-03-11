@@ -356,10 +356,10 @@ function getAttachmentName(path) {
 }
 
 /* 任务条目 */
-.group-todos { padding: 6px 8px 8px; display: flex; flex-direction: column; gap: 5px; }
+.group-todos { padding: 10px 8px 12px; display: flex; flex-direction: column; gap: 14px; }
 .ov-todo-item {
   display: flex; align-items: flex-start; gap: 10px;
-  padding: 9px 12px;
+  padding: 12px 12px;
   border-radius: var(--radius-sm);
   border-left: 3px solid transparent;
   transition: background 0.15s;
