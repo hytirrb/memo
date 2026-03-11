@@ -29,6 +29,20 @@
           </div>
 
           <div class="form-group">
+            <label class="form-label"><span class="label-icon">📎</span> 附件</label>
+            <div class="attachment-box">
+              <div v-if="!form.attachment">
+                <input type="file" @change="handleFileUpload" :disabled="isUploading" class="form-input" style="padding: 6px;" />
+                <span v-if="isUploading" style="font-size: 12px; color: #666; margin-left: 8px;">上传中...</span>
+              </div>
+              <div v-else class="attachment-preview">
+                <a :href="form.attachment" target="_blank" class="attachment-link">查看附件 ({{ form.attachment.split('/').pop() }})</a>
+                <button type="button" class="btn-remove-attachment" @click="form.attachment = null">✕ 移除</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
             <div class="desc-label-row">
               <label class="form-label"><span class="label-icon">💬</span> 备注说明（支持 Markdown）</label>
               <div class="preview-toggle">
@@ -88,6 +102,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { marked } from 'marked'
+import { uploadFile } from '../api/todo'
 
 marked.setOptions({ breaks: true })
 
@@ -101,6 +116,21 @@ const props = defineProps({
 defineEmits(['close', 'submit'])
 
 const descTab = ref('edit')
+const isUploading = ref(false)
+
+const handleFileUpload = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  isUploading.value = true
+  try {
+    const res = await uploadFile(file)
+    props.form.attachment = res.data.url
+  } catch (error) {
+    alert('上传失败')
+  } finally {
+    isUploading.value = false
+  }
+}
 
 const previewHtml = computed(() =>
   props.form?.description ? marked.parse(props.form.description) : '<p style="color:#94a3b8">暂无内容</p>'
@@ -154,6 +184,37 @@ const previewHtml = computed(() =>
 }
 .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
 .form-textarea { resize: vertical; min-height: 100px; font-family: 'Courier New', monospace; font-size: 13px; }
+
+.attachment-box {
+  padding: 10px 14px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: #fafafa;
+}
+.attachment-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.attachment-link {
+  color: var(--primary);
+  text-decoration: underline;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-remove-attachment {
+  border: none;
+  background: none;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 12px;
+}
+.btn-remove-attachment:hover {
+  text-decoration: underline;
+}
 
 .desc-label-row { display: flex; align-items: center; justify-content: space-between; }
 .preview-toggle {

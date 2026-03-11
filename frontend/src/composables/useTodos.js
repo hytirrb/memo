@@ -11,7 +11,7 @@ export function useTodos() {
   const isEditing = ref(false)
   const deleteTarget = ref(null)
   const toast = ref({ show: false, msg: '', type: 'success' })
-  const form = ref({ title: '', description: '', date: '', priority: 'medium', completed: false })
+  const form = ref({ title: '', description: '', date: '', priority: 'medium', completed: false, attachment: null })
   let editingId = null
 
   // ───── 常量 ─────
@@ -105,7 +105,8 @@ export function useTodos() {
         title: form.value.title,
         description: form.value.description,
         priority: form.value.priority,
-        completed: form.value.completed
+        completed: form.value.completed,
+        attachment: form.value.attachment ?? ''
       })
       showToast('任务已更新', 'success')
     } else {
@@ -127,14 +128,14 @@ export function useTodos() {
   function openAddModal(date) {
     isEditing.value = false
     editingId = null
-    form.value = { title: '', description: '', date: date || selectedDate.value, priority: 'medium', completed: false }
+    form.value = { title: '', description: '', date: date || selectedDate.value, priority: 'medium', completed: false, attachment: null }
     showModal.value = true
   }
 
   function openEditModal(todo) {
     isEditing.value = true
     editingId = todo.id
-    form.value = { title: todo.title, description: todo.description || '', date: todo.date, priority: todo.priority, completed: todo.completed }
+    form.value = { title: todo.title, description: todo.description || '', date: todo.date, priority: todo.priority, completed: todo.completed, attachment: todo.attachment || null }
     showModal.value = true
   }
 

@@ -9,6 +9,10 @@ export default defineConfig({
       '/todos': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/attachments': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   }

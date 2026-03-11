@@ -96,6 +96,10 @@
               <div class="ov-todo-body">
                 <span class="ov-todo-title md-inline" v-html="renderInline(todo.title)"></span>
                 <span v-if="todo.description" class="ov-todo-desc md-body" v-html="renderMd(todo.description)"></span>
+                <div v-if="todo.attachment" class="ov-todo-attachment">
+                  <span class="ov-attachment-name">附件: {{ getAttachmentName(todo.attachment) }}</span>
+                  <a :href="todo.attachment" target="_blank" download class="ov-attachment-link">下载附件</a>
+                </div>
               </div>
               <span class="ov-priority-badge" :class="`p-${todo.priority}`">
                 {{ priorityMap[todo.priority] }}
@@ -216,6 +220,11 @@ function offsetDate(iso, days) {
   const d = new Date(iso)
   d.setDate(d.getDate() + days)
   return d.toISOString().slice(0, 10)
+}
+
+function getAttachmentName(path) {
+  if (!path) return ''
+  return path.split('/').pop()
 }
 </script>
 
@@ -373,8 +382,24 @@ function offsetDate(iso, days) {
 .ov-check-btn:hover { border-color: var(--primary); transform: scale(1.1); }
 
 .ov-todo-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.ov-todo-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
-.ov-todo-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.ov-todo-title { font-size: 19px; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+.ov-todo-desc { font-size: 16px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+.ov-todo-attachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  flex-wrap: wrap;
+}
+.ov-attachment-name {
+  color: var(--text-secondary);
+}
+.ov-attachment-link {
+  color: var(--primary);
+  text-decoration: underline;
+}
 
 /* 总览页备注 Markdown 样式 */
 .md-inline :deep(strong) { font-weight: 800; }

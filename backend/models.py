@@ -7,6 +7,7 @@ class TodoCreate(BaseModel):
     description: Optional[str] = ""
     date: str
     priority: Optional[str] = "medium"  # low, medium, high
+    attachment: Optional[str] = None
 
 
 class TodoUpdate(BaseModel):
@@ -14,3 +15,4 @@ class TodoUpdate(BaseModel):
     description: Optional[str] = None
     priority: Optional[str] = None
     completed: Optional[bool] = None
+    attachment: Optional[str] = None

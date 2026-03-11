@@ -1,11 +1,14 @@
 import time
+import shutil
+from pathlib import Path
 from datetime import date
 from typing import List, Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from ..models import TodoCreate, TodoUpdate
 from ..database import load_todos, save_todos
 
 router = APIRouter(prefix="/todos", tags=["todos"])
+UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "attachments"
 
 
 @router.get("")
@@ -22,6 +25,7 @@ def create_todo(todo: TodoCreate):
         "description": todo.description,
         "date": todo.date,
         "priority": todo.priority,
+        "attachment": todo.attachment,
         "completed": False,
         "created_at": str(date.today())
     }
@@ -43,6 +47,11 @@ def update_todo(todo_id: int, todo: TodoUpdate):
                 t["priority"] = todo.priority
             if todo.completed is not None:
                 t["completed"] = todo.completed
+            if todo.attachment is not None:
+                if todo.attachment == "":
+                    t["attachment"] = None
+                else:
+                    t["attachment"] = todo.attachment
             save_todos(todos)
             return t
     raise HTTPException(status_code=404, detail="Todo not found")
@@ -97,6 +106,7 @@ def import_todos(items: List[Any]):
             "description": item.get("description", ""),
             "date": item.get("date", str(date.today())),
             "priority": item.get("priority", "medium"),
+            "attachment": item.get("attachment", None),
             "completed": item.get("completed", False),
             "created_at": item.get("created_at", str(date.today())),
         }
@@ -105,3 +115,14 @@ def import_todos(items: List[Any]):
         imported += 1
     save_todos(todos)
     return {"imported": imported, "skipped": skipped}
+
+
+@router.post("/upload")
+def upload_file(file: UploadFile = File(...)):
+    UPLOAD_DIR.mkdir(exist_ok=True)
+
+    file_path = UPLOAD_DIR / file.filename
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {"filename": file.filename, "url": f"/attachments/{file.filename}"}

@@ -7,6 +7,10 @@
     <div class="todo-body">
       <span class="todo-title md-inline" v-html="renderInline(todo.title)"></span>
       <span v-if="todo.description" class="todo-desc md-inline" v-html="renderInline(todo.description)"></span>
+      <div v-if="todo.attachment" class="todo-attachment">
+        <span class="attachment-name">附件: {{ getAttachmentName(todo.attachment) }}</span>
+        <a :href="todo.attachment" target="_blank" download class="attachment-link">下载附件</a>
+      </div>
     </div>
 
     <span class="priority-badge" :class="`p-${todo.priority}`">{{ priorityMap[todo.priority] }}</span>
@@ -30,14 +34,19 @@ function renderInline(text) {
   if (!text) return ''
   return marked.parseInline(text)
 }
+
+function getAttachmentName(path) {
+  if (!path) return ''
+  return path.split('/').pop()
+}
 </script>
 
 <style scoped>
 .todo-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
+  gap: 16px;
+  padding: 18px 22px;
   background: white;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -53,12 +62,12 @@ function renderInline(text) {
 .todo-card.completed { opacity: 0.5; }
 
 .check-btn {
-  width: 26px; height: 26px; flex-shrink: 0;
+  width: 28px; height: 28px; flex-shrink: 0;
   border-radius: 50%;
   border: 2px solid var(--border);
   background: white; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: white;
+  font-size: 15px; font-weight: 700; color: white;
   transition: all 0.2s;
   align-self: flex-start;
   margin-top: 2px;
@@ -74,15 +83,31 @@ function renderInline(text) {
 }
 
 .todo-title {
-  font-size: 17px; font-weight: 600;
+  font-size: 19px; font-weight: 600;
   color: var(--text-primary);
   line-height: 1.4;
 }
 
 .todo-desc {
-  font-size: 15px; color: var(--text-muted);
+  font-size: 16px; color: var(--text-muted);
   line-height: 1.4;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.todo-attachment {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.4;
+  flex-wrap: wrap;
+}
+.attachment-name {
+  color: var(--text-secondary);
+}
+.attachment-link {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 /* Markdown inline */
