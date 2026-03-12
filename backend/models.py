@@ -6,7 +6,7 @@ class TodoCreate(BaseModel):
     title: str
     description: Optional[str] = ""
     date: str
-    priority: Optional[str] = "medium"  # low, medium, high
+    priority: Optional[str] = "low"  # low, medium, high
     attachment: Optional[str] = None
 
 

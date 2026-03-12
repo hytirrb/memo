@@ -11,7 +11,7 @@ export function useTodos() {
   const isEditing = ref(false)
   const deleteTarget = ref(null)
   const toast = ref({ show: false, msg: '', type: 'success' })
-  const form = ref({ title: '', description: '', date: '', priority: 'medium', completed: false, attachment: null })
+  const form = ref({ title: '', description: '', date: '', priority: 'low', completed: false, attachment: null })
   let editingId = null
 
   // ───── 常量 ─────
@@ -128,7 +128,7 @@ export function useTodos() {
   function openAddModal(date) {
     isEditing.value = false
     editingId = null
-    form.value = { title: '', description: '', date: date || selectedDate.value, priority: 'medium', completed: false, attachment: null }
+    form.value = { title: '', description: '', date: date || selectedDate.value, priority: 'low', completed: false, attachment: null }
     showModal.value = true
   }
 

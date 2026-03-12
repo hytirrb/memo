@@ -105,7 +105,7 @@ def import_todos(items: List[Any]):
             "title": item.get("title", ""),
             "description": item.get("description", ""),
             "date": item.get("date", str(date.today())),
-            "priority": item.get("priority", "medium"),
+            "priority": item.get("priority", "low"),
             "attachment": item.get("attachment", None),
             "completed": item.get("completed", False),
             "created_at": item.get("created_at", str(date.today())),
